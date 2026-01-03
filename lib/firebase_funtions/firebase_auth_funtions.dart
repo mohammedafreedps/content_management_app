@@ -1,4 +1,5 @@
 import 'package:firebase_auth/firebase_auth.dart';
+import 'package:cloud_firestore/cloud_firestore.dart';
 
 class FirebaseAuthFunction {
   FirebaseAuthFunction._privateConstructor();
@@ -7,6 +8,7 @@ class FirebaseAuthFunction {
       FirebaseAuthFunction._privateConstructor();
 
   final FirebaseAuth _auth = FirebaseAuth.instance;
+  final FirebaseFirestore _firestore = FirebaseFirestore.instance;
 
   /// --------------------------------------------------
   /// 1. AUTH STATE STREAM
@@ -38,14 +40,48 @@ class FirebaseAuthFunction {
   }
 
   /// --------------------------------------------------
-  /// 3. SIGN OUT
+  /// 3. SIGN UP WITH EMAIL, PASSWORD & NAME
+  /// --------------------------------------------------
+  Future<User?> signUpWithEmail({
+    required String email,
+    required String password,
+    required String name,
+  }) async {
+    try {
+      // Create auth user
+      final userCredential = await _auth.createUserWithEmailAndPassword(
+        email: email.trim(),
+        password: password,
+      );
+
+      final user = userCredential.user;
+
+      if (user == null) return null;
+
+      // Save user data to Firestore
+      await _firestore.collection('users').doc(user.uid).set({
+        'uid': user.uid,
+        'email': user.email,
+        'name': name.trim(),
+        'role': 'viewer',
+        'createdAt': FieldValue.serverTimestamp(),
+      });
+
+      return user;
+    } on FirebaseAuthException catch (e) {
+      throw _handleAuthException(e);
+    }
+  }
+
+  /// --------------------------------------------------
+  /// 4. SIGN OUT
   /// --------------------------------------------------
   Future<void> signOut() async {
     await _auth.signOut();
   }
 
   /// --------------------------------------------------
-  /// 4. FORGOT PASSWORD
+  /// 5. FORGOT PASSWORD
   /// --------------------------------------------------
   Future<void> sendPasswordResetEmail({
     required String email,
@@ -64,6 +100,10 @@ class FirebaseAuthFunction {
   /// --------------------------------------------------
   String _handleAuthException(FirebaseAuthException e) {
     switch (e.code) {
+      case 'email-already-in-use':
+        return 'This email is already registered.';
+      case 'weak-password':
+        return 'Password is too weak.';
       case 'user-not-found':
         return 'No user found for this email.';
       case 'wrong-password':
