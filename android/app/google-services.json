@@ -1,0 +1,29 @@
+{
+  "project_info": {
+    "project_number": "1069034772278",
+    "project_id": "content-review-bbd55",
+    "storage_bucket": "content-review-bbd55.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:1069034772278:android:d6144ddb20b94a10020597",
+        "android_client_info": {
+          "package_name": "com.example.content_managing_app"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyCpfScp5XxUeRdDO28kKE5ApEHBTH3Uhj8"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
