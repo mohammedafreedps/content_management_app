@@ -1,3 +1,4 @@
+import 'package:content_managing_app/screen/widgets/snack_bar_error_messenger.dart';
 import 'package:content_managing_app/theme/app_spacing.dart';
 import 'package:flutter/material.dart';
 
@@ -30,11 +31,22 @@ class _LoginSignupScreenState extends State<LoginSignupScreen> {
                     style: Theme.of(context).textTheme.displayLarge,
                   ),
                   SizedBox(height: AppSpacing.xxl),
-                  TextField(decoration: InputDecoration(hintText: 'e-mail'),controller: emailController,),
+                  TextField(
+                    decoration: InputDecoration(hintText: 'e-mail'),
+                    controller: emailController,
+                  ),
                   SizedBox(height: AppSpacing.md),
-                  TextField(decoration: InputDecoration(hintText: 'password'),controller: passwordController,),
+                  TextField(
+                    decoration: InputDecoration(hintText: 'password'),
+                    controller: passwordController,
+                  ),
                   SizedBox(height: AppSpacing.xl),
-                  ElevatedButton(onPressed: () {}, child: Text('Login')),
+                  ElevatedButton(onPressed: () {
+                    if(emailController.text.isEmpty || passwordController.text.isEmpty){
+                      snackBarErrorMessage(context: context, message: 'Please fill in all fields');
+                      return;
+                    }
+                  }, child: Text('Login')),
                   SizedBox(height: AppSpacing.lg),
                   TextButton(
                     onPressed: () {
@@ -55,24 +67,50 @@ class _LoginSignupScreenState extends State<LoginSignupScreen> {
         body: Padding(
           padding: EdgeInsets.all(AppSpacing.screenPadding),
           child: Column(
-             mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+            mainAxisAlignment: MainAxisAlignment.spaceEvenly,
             children: [
-            Column(
+              Column(
                 children: [
                   Text(
                     'Signup',
                     style: Theme.of(context).textTheme.displayLarge,
                   ),
                   SizedBox(height: AppSpacing.xxl),
-                  TextField(decoration: InputDecoration(hintText: 'Full name'), controller: nameController),
+                  TextField(
+                    decoration: InputDecoration(hintText: 'Full name'),
+                    controller: nameController,
+                  ),
                   SizedBox(height: AppSpacing.md),
-                  TextField(decoration: InputDecoration(hintText: 'e-mail'), controller: emailController,),
+                  TextField(
+                    decoration: InputDecoration(hintText: 'e-mail'),
+                    controller: emailController,
+                  ),
                   SizedBox(height: AppSpacing.md),
-                  TextField(decoration: InputDecoration(hintText: 'password'), controller: passwordController),
+                  TextField(
+                    decoration: InputDecoration(hintText: 'password'),
+                    controller: passwordController,
+                  ),
                   SizedBox(height: AppSpacing.md),
-                  TextField(decoration: InputDecoration(hintText: 'comfirm password'),controller: comfirmPasswordController,),
+                  TextField(
+                    decoration: InputDecoration(hintText: 'comfirm password'),
+                    controller: comfirmPasswordController,
+                  ),
                   SizedBox(height: AppSpacing.xl),
-                  ElevatedButton(onPressed: () {}, child: Text('Signup')),
+                  ElevatedButton(
+                    onPressed: () {
+                      if (nameController.text.isEmpty ||
+                          emailController.text.isEmpty ||
+                          passwordController.text.isEmpty ||
+                          comfirmPasswordController.text.isEmpty) {
+                        snackBarErrorMessage(
+                          context: context,
+                          message: 'Please fill in all fields',
+                        );
+                        return;
+                      }
+                    },
+                    child: Text('Signup'),
+                  ),
                   SizedBox(height: AppSpacing.lg),
                   TextButton(
                     onPressed: () {
@@ -84,8 +122,8 @@ class _LoginSignupScreenState extends State<LoginSignupScreen> {
                   ),
                 ],
               ),
-          ],
-        ),
+            ],
+          ),
         ),
       );
     }
