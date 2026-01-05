@@ -49,6 +49,7 @@ class FirebaseFileUpload {
         "platform": platform,
         "description": description,
         "status": "pending_upload", // retry / upload later
+        "isApproved" : false,
         "uploadedAt": ServerValue.timestamp,
       };
 

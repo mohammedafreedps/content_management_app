@@ -7,6 +7,7 @@ class UploadedMedia {
   final String status;
   final String storagePath;
   final String type;
+  final bool isApproved;
   final DateTime uploadedAt;
 
   UploadedMedia({
@@ -18,6 +19,7 @@ class UploadedMedia {
     required this.status,
     required this.storagePath,
     required this.type,
+    required this.isApproved,
     required this.uploadedAt,
   });
 
@@ -34,6 +36,7 @@ class UploadedMedia {
       status: map['status'] ?? 'pending_upload',
       storagePath: map['storagePath'] ?? '',
       type: map['type'] ?? 'image',
+      isApproved: map['isApproved'] ?? false,
       uploadedAt: DateTime.fromMillisecondsSinceEpoch(
         map['uploadedAt'] is int ? map['uploadedAt'] : 0,
       ),

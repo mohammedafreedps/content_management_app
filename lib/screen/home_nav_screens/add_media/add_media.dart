@@ -124,7 +124,7 @@ class _AddMediaScreenState extends State<AddMediaScreen> {
                           width: width * 0.8,
                           height: width * 0.8,
                           decoration: BoxDecoration(
-                            color: Theme.of(context).colorScheme.secondary,
+                            color: Theme.of(context).colorScheme.primary,
                             borderRadius: BorderRadius.circular(AppRadius.lg),
                           ),
                           child: media == null
