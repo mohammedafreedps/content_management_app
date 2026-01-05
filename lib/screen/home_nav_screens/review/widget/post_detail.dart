@@ -1,8 +1,13 @@
+import 'package:content_managing_app/firebase_funtions/firebase_comment_functions.dart';
+import 'package:content_managing_app/helper_funtions/format_comment_time.dart';
 import 'package:content_managing_app/main.dart';
 import 'package:content_managing_app/models/uploaded_media_model.dart';
+import 'package:content_managing_app/screen/home_nav_screens/review/cubit/comment_cubit.dart';
+import 'package:content_managing_app/screen/widgets/snack_bar_error_messenger.dart';
 import 'package:content_managing_app/theme/app_radious.dart';
 import 'package:content_managing_app/theme/app_spacing.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_bloc/flutter_bloc.dart';
 
 class PostDetail extends StatefulWidget {
   final UploadedMedia uploadedMedia;
@@ -28,7 +33,9 @@ class _PostDetailState extends State<PostDetail> {
 
     return Scaffold(
       resizeToAvoidBottomInset: true,
-      appBar: AppBar(title: Text(widget.uploadedMedia.isStory ? 'Story' : 'Post')),
+      appBar: AppBar(
+        title: Text(widget.uploadedMedia.isStory ? 'Story' : 'Post'),
+      ),
 
       // ================= CONTENT =================
       body: SingleChildScrollView(
@@ -74,31 +81,84 @@ class _PostDetailState extends State<PostDetail> {
 
             const SizedBox(height: AppSpacing.sm),
 
-            // Placeholder comments list
-            ListView.builder(
-              shrinkWrap: true,
-              physics: const NeverScrollableScrollPhysics(),
-              itemCount: 3,
-              itemBuilder: (_, index) {
-                return Padding(
-                  padding: const EdgeInsets.symmetric(vertical: 8),
-                  child: Row(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      const CircleAvatar(radius: 16),
-                      const SizedBox(width: 8),
-                      Expanded(
-                        child: Container(
-                          padding: const EdgeInsets.all(10),
-                          decoration: BoxDecoration(
-                            color: Theme.of(context).colorScheme.surface,
-                            borderRadius: BorderRadius.circular(8),
+            StreamBuilder<List<Map<String, dynamic>>>(
+              stream: FirebaseCommentFunctions.instance.streamPostComments(
+                widget.uploadedMedia.id,
+              ),
+              builder: (context, snapshot) {
+                if (snapshot.connectionState == ConnectionState.waiting) {
+                  return const Padding(
+                    padding: EdgeInsets.all(16),
+                    child: CircularProgressIndicator(),
+                  );
+                }
+
+                if (snapshot.hasError) {
+                  return const Padding(
+                    padding: EdgeInsets.all(16),
+                    child: Text('Failed to load comments'),
+                  );
+                }
+
+                final comments = snapshot.data ?? [];
+
+                if (comments.isEmpty) {
+                  return const Padding(
+                    padding: EdgeInsets.all(16),
+                    child: Text('No comments yet'),
+                  );
+                }
+
+                return ListView.builder(
+                  shrinkWrap: true,
+                  physics: const NeverScrollableScrollPhysics(),
+                  itemCount: comments.length,
+                  itemBuilder: (_, index) {
+                    final comment = comments[index];
+
+                    return Padding(
+                      padding: const EdgeInsets.symmetric(vertical: 8),
+                      child: Row(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          const CircleAvatar(radius: 16),
+                          const SizedBox(width: 8),
+                          Expanded(
+                            child: Container(
+                              padding: const EdgeInsets.all(10),
+                              decoration: BoxDecoration(
+                                color: Theme.of(context).colorScheme.surface,
+                                borderRadius: BorderRadius.circular(8),
+                              ),
+                              child: Column(
+                                crossAxisAlignment: CrossAxisAlignment.start,
+                                children: [
+                                  // ---------- COMMENT TEXT ----------
+                                  Text(
+                                    comment['text'] ?? '',
+                                    style: Theme.of(
+                                      context,
+                                    ).textTheme.bodyMedium,
+                                  ),
+
+                                  const SizedBox(height: 4),
+
+                                  // ---------- TIME ----------
+                                  Text(
+                                    formatCommentTime(comment['createdAt']),
+                                    style: Theme.of(context)
+                                        .textTheme
+                                        .labelSmall
+                                        ?.copyWith(color: Colors.grey),
+                                  ),
+                                ],
+                              ),
+                            ),
                           ),
-                          child: const Text('This is a comment preview'),
-                        ),
+                        ],
                       ),
-                    ],
-                  ),
+                    );
+                  },
                 );
               },
             ),
@@ -123,7 +183,10 @@ class _PostDetailState extends State<PostDetail> {
             decoration: BoxDecoration(
               color: Theme.of(context).colorScheme.surface,
               boxShadow: [
-                BoxShadow(color: Colors.black.withValues(alpha:  0.05), blurRadius: 8),
+                BoxShadow(
+                  color: Colors.black.withValues(alpha: 0.05),
+                  blurRadius: 8,
+                ),
               ],
             ),
             child: Row(
@@ -140,18 +203,35 @@ class _PostDetailState extends State<PostDetail> {
                   ),
                 ),
                 const SizedBox(width: AppSpacing.sm),
-                IconButton(
-                  onPressed: () {
-                    final text = _commentController.text.trim();
-                    if (text.isEmpty) return;
-
-                    debugPrint('Send comment: $text');
-                    _commentController.clear();
+                BlocConsumer<CommentCubit, CommentState>(
+                  listener: (context, state) {
+                    if (state is CommentFailedState) {
+                      snackBarErrorMessage(
+                        context: context,
+                        message: state.message,
+                      );
+                    }
+                    if (state is CommentedSuccsussState) {
+                      _commentController.clear();
+                    }
                   },
-                  icon: Icon(
-                    Icons.send,
-                    color: Theme.of(context).colorScheme.primary,
-                  ),
+                  builder: (context, state) {
+                    return IconButton(
+                      onPressed: () {
+                        final text = _commentController.text.trim();
+                        if (text.isEmpty) return;
+                        context.read<CommentCubit>().postComment(
+                          postId: widget.uploadedMedia.id,
+                          text: _commentController.text.trim(),
+                        );
+                        debugPrint('Send comment: $text');
+                      },
+                      icon: Icon(
+                        Icons.send,
+                        color: Theme.of(context).colorScheme.primary,
+                      ),
+                    );
+                  },
                 ),
               ],
             ),
