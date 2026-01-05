@@ -23,12 +23,14 @@ class MyApp extends StatelessWidget {
     return MultiBlocProvider(
       providers: [
         // Add your BlocProviders here
-        BlocProvider(create: (context) =>LoginCubit()),
-        BlocProvider(create: (context) =>SignupCubit()),
+        BlocProvider(create: (context) => LoginCubit()),
+        BlocProvider(create: (context) => SignupCubit()),
       ],
       child: MaterialApp(
         themeMode: ThemeMode.light,
         theme: ThemeData(
+          splashColor: Colors.transparent,
+          highlightColor: Colors.transparent,
           colorScheme: ColorScheme(
             brightness: Brightness.light,
             primary: Color.fromARGB(255, 13, 71, 21),
@@ -40,7 +42,11 @@ class MyApp extends StatelessWidget {
             surface: Color.fromARGB(255, 235, 244, 221),
             onSurface: Color.fromARGB(255, 13, 71, 21),
           ),
-          textTheme: GoogleFonts.nunitoTextTheme(ThemeData.light().textTheme),
+          textTheme: GoogleFonts.nunitoTextTheme(ThemeData.light().textTheme)
+              .apply(
+                bodyColor: const Color.fromARGB(255, 13, 71, 21),
+                displayColor: const Color.fromARGB(255, 13, 71, 21),
+              ),
         ),
         title: 'Content Managing App',
         home: StreamBuilder<bool>(
