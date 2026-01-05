@@ -4,6 +4,7 @@ import 'package:content_managing_app/screen/home_screen/home_screen.dart';
 import 'package:content_managing_app/screen/login_signup/cubit/login/login_cubit.dart';
 import 'package:content_managing_app/screen/login_signup/cubit/signup/signup_cubit.dart';
 import 'package:content_managing_app/screen/login_signup/login_signup.dart';
+import 'package:content_managing_app/theme/app_colors.dart';
 import 'package:firebase_core/firebase_core.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
@@ -47,6 +48,12 @@ class MyApp extends StatelessWidget {
                 bodyColor: const Color.fromARGB(255, 13, 71, 21),
                 displayColor: const Color.fromARGB(255, 13, 71, 21),
               ),
+              extensions: const[
+                AppColors(
+                  calendarActive: Color.fromARGB(255, 233, 238, 217),
+                  calendarInactive: Colors.transparent
+                )
+              ]
         ),
         title: 'Content Managing App',
         home: StreamBuilder<bool>(
@@ -71,4 +78,9 @@ class MyApp extends StatelessWidget {
       ),
     );
   }
+}
+
+extension ThemeX on BuildContext {
+  AppColors get appColors =>
+      Theme.of(this).extension<AppColors>()!;
 }
