@@ -1,5 +1,6 @@
 import 'package:content_managing_app/firebase_funtions/firebase_auth_funtions.dart';
 import 'package:content_managing_app/firebase_options.dart';
+import 'package:content_managing_app/screen/home_nav_screens/add_media/cubit/fire_upload_cubit.dart';
 import 'package:content_managing_app/screen/home_screen/home_screen.dart';
 import 'package:content_managing_app/screen/login_signup/cubit/login/login_cubit.dart';
 import 'package:content_managing_app/screen/login_signup/cubit/signup/signup_cubit.dart';
@@ -26,6 +27,7 @@ class MyApp extends StatelessWidget {
         // Add your BlocProviders here
         BlocProvider(create: (context) => LoginCubit()),
         BlocProvider(create: (context) => SignupCubit()),
+        BlocProvider(create: (context) => FileUploadCubit()),
       ],
       child: MaterialApp(
         themeMode: ThemeMode.light,
