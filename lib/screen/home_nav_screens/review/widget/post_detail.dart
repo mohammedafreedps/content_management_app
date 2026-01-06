@@ -6,6 +6,7 @@ import 'package:content_managing_app/screen/home_nav_screens/review/cubit/commen
 import 'package:content_managing_app/screen/widgets/snack_bar_error_messenger.dart';
 import 'package:content_managing_app/theme/app_radious.dart';
 import 'package:content_managing_app/theme/app_spacing.dart';
+import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 
@@ -20,6 +21,7 @@ class PostDetail extends StatefulWidget {
 
 class _PostDetailState extends State<PostDetail> {
   final TextEditingController _commentController = TextEditingController();
+  final String currentUserId = FirebaseAuth.instance.currentUser!.uid;
 
   @override
   void dispose() {
@@ -37,9 +39,7 @@ class _PostDetailState extends State<PostDetail> {
         title: Text(widget.uploadedMedia.isStory ? 'Story' : 'Post'),
         actions: [
           PopupMenuButton(
-            onSelected: (value) {
-              
-            },
+            onSelected: (value) {},
             itemBuilder: (context) => [
               const PopupMenuItem(value: 'edit', child: Text('Edit')),
               const PopupMenuItem(value: 'approve', child: Text('Approve')),
@@ -68,7 +68,10 @@ class _PostDetailState extends State<PostDetail> {
               ),
               alignment: Alignment.center,
               child: widget.uploadedMedia.storagePath.isNotEmpty
-                  ? Hero(tag: widget.uploadedMedia.id, child: Image.network(widget.uploadedMedia.storagePath))
+                  ? Hero(
+                      tag: widget.uploadedMedia.id,
+                      child: Image.network(widget.uploadedMedia.storagePath),
+                    )
                   : Icon(
                       Icons.content_copy_outlined,
                       size: 48,
@@ -132,36 +135,59 @@ class _PostDetailState extends State<PostDetail> {
                   itemCount: comments.length,
                   itemBuilder: (_, index) {
                     final comment = comments[index];
+                    final bool isMe = comment['userId'] == currentUserId;
 
                     return Padding(
                       padding: const EdgeInsets.symmetric(vertical: 8),
                       child: Row(
+                        mainAxisAlignment: isMe
+                            ? MainAxisAlignment.end
+                            : MainAxisAlignment.start,
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
-                          const CircleAvatar(radius: 16),
-                          const SizedBox(width: 8),
-                          Expanded(
+                          if (!isMe) const CircleAvatar(radius: 16),
+                          if (!isMe) const SizedBox(width: 8),
+
+                          Flexible(
                             child: Container(
                               padding: const EdgeInsets.all(10),
                               decoration: BoxDecoration(
-                                color: Theme.of(context).colorScheme.surface,
+                                color: isMe
+                                    ? Theme.of(
+                                        context,
+                                      ).colorScheme.primary.withValues(alpha:  0.1)
+                                    : Theme.of(context).colorScheme.surface,
                                 borderRadius: BorderRadius.circular(8),
                               ),
                               child: Column(
                                 crossAxisAlignment: CrossAxisAlignment.start,
                                 children: [
-                                  Text('@${comment['userName'] ?? ''}',style: Theme.of(context).textTheme.bodySmall?.copyWith(color: Theme.of(context).colorScheme.secondary),),
-                                  // ---------- COMMENT TEXT ----------
+                                  // USERNAME (optional for self)
+                                  if (!isMe)
+                                    Text(
+                                      '@${comment['userName'] ?? ''}',
+                                      style: Theme.of(context)
+                                          .textTheme
+                                          .bodySmall
+                                          ?.copyWith(
+                                            color: Theme.of(
+                                              context,
+                                            ).colorScheme.secondary,
+                                          ),
+                                    ),
+
+                                  // COMMENT TEXT
                                   Text(
                                     comment['text'] ?? '',
-                                    style: Theme.of(
-                                      context,
-                                    ).textTheme.bodyMedium?.copyWith(fontWeight: FontWeight.bold),
+                                    style: Theme.of(context)
+                                        .textTheme
+                                        .bodyMedium
+                                        ?.copyWith(fontWeight: FontWeight.bold),
                                   ),
 
                                   const SizedBox(height: 4),
 
-                                  // ---------- TIME ----------
+                                  // TIME
                                   Text(
                                     formatCommentTime(comment['createdAt']),
                                     style: Theme.of(context)
@@ -173,6 +199,9 @@ class _PostDetailState extends State<PostDetail> {
                               ),
                             ),
                           ),
+
+                          if (isMe) const SizedBox(width: 8),
+                          if (isMe) const CircleAvatar(radius: 16),
                         ],
                       ),
                     );
