@@ -44,6 +44,7 @@ class MyApp extends StatelessWidget {
         BlocProvider(create: (context) => CommentCubit()),
       ],
       child: MaterialApp(
+        debugShowCheckedModeBanner: false,
         themeMode: ThemeMode.light,
         theme: ThemeData(
           splashColor: Colors.transparent,

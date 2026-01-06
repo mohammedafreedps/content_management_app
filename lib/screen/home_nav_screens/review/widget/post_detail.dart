@@ -32,6 +32,7 @@ class _PostDetailState extends State<PostDetail> {
   @override
   Widget build(BuildContext context) {
     final screen = context.screenSize;
+    final String currentUserId = FirebaseAuth.instance.currentUser!.uid;
 
     return Scaffold(
       resizeToAvoidBottomInset: true,
