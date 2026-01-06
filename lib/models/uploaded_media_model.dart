@@ -7,6 +7,8 @@ class UploadedMedia {
   final String status;
   final String storagePath;
   final String type;
+  final bool isApproved;
+  final String userName;
   final DateTime uploadedAt;
 
   UploadedMedia({
@@ -18,6 +20,8 @@ class UploadedMedia {
     required this.status,
     required this.storagePath,
     required this.type,
+    required this.isApproved,
+    required this.userName,
     required this.uploadedAt,
   });
 
@@ -32,8 +36,10 @@ class UploadedMedia {
       isStory: map['isStory'] ?? false,
       platform: map['platform'] ?? 'instagram',
       status: map['status'] ?? 'pending_upload',
-      storagePath: map['storagePath'] ?? '',
+      storagePath: map['downloadUrl'] ?? '',
       type: map['type'] ?? 'image',
+      isApproved: map['isApproved'] ?? false,
+      userName: map['userName'] ?? '',
       uploadedAt: DateTime.fromMillisecondsSinceEpoch(
         map['uploadedAt'] is int ? map['uploadedAt'] : 0,
       ),
