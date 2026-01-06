@@ -8,6 +8,7 @@ class UploadedMedia {
   final String storagePath;
   final String type;
   final bool isApproved;
+  final String userName;
   final DateTime uploadedAt;
 
   UploadedMedia({
@@ -20,6 +21,7 @@ class UploadedMedia {
     required this.storagePath,
     required this.type,
     required this.isApproved,
+    required this.userName,
     required this.uploadedAt,
   });
 
@@ -37,6 +39,7 @@ class UploadedMedia {
       storagePath: map['downloadUrl'] ?? '',
       type: map['type'] ?? 'image',
       isApproved: map['isApproved'] ?? false,
+      userName: map['userName'] ?? '',
       uploadedAt: DateTime.fromMillisecondsSinceEpoch(
         map['uploadedAt'] is int ? map['uploadedAt'] : 0,
       ),

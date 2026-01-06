@@ -10,7 +10,7 @@ class CommentCubit extends Cubit<CommentState> {
 
   final userId = FirebaseAuth.instance.currentUser?.uid;
 
-  Future postComment({required String postId, required String text, })async {
+  Future postComment({required String postId, required String text, required String userName})async {
     emit(CommentingState());
     if(userId == null){
       emit(CommentFailedState(message: 'User Id failed'));
@@ -18,7 +18,7 @@ class CommentCubit extends Cubit<CommentState> {
     }
     try {
       
-      await FirebaseCommentFunctions.instance.postComment(postId: postId, userId: userId!, text: text, onSuccess: (){
+      await FirebaseCommentFunctions.instance.postComment(userName: userName , postId: postId, userId: userId!, text: text, onSuccess: (){
         emit(CommentedSuccsussState());
       }, onError: (error){
         emit(CommentFailedState(message: error));

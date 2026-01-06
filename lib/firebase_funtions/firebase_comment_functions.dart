@@ -19,6 +19,7 @@ class FirebaseCommentFunctions {
     required String postId,
     required String userId,
     required String text,
+    required String userName,
     required void Function() onSuccess,
     required void Function(String error) onError,
   }) async {
@@ -33,6 +34,7 @@ class FirebaseCommentFunctions {
       final commentData = {
         'text': trimmedText,
         'userId': userId,
+        'userName' : userName,
         'createdAt': ServerValue.timestamp,
       };
 

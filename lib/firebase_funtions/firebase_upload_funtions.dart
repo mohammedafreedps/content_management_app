@@ -1,8 +1,10 @@
 import 'dart:io';
 
+import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_core/firebase_core.dart';
 import 'package:firebase_database/firebase_database.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
+import 'package:flutter/foundation.dart';
 
 class FirebaseFileUpload {
   FirebaseFileUpload._();
@@ -37,9 +39,28 @@ class FirebaseFileUpload {
       String? downloadUrl;
       String? storagePath;
 
-      // -----------------------------------------
-      // IMAGE → SUPABASE (NO REAL PROGRESS)
-      // -----------------------------------------
+      // -------------------------------------------------
+      // FETCH USER NAME FROM FIRESTORE (NON-BLOCKING)
+      // -------------------------------------------------
+      String userName = '';
+
+      try {
+        final userDoc = await FirebaseFirestore.instance
+            .collection('users')
+            .doc(userId)
+            .get();
+
+        if (userDoc.exists) {
+          userName = userDoc.data()?['name'] ?? '';
+        }
+      } catch (e) {
+        // 🔥 Do NOT fail upload if Firestore fails
+        debugPrint('⚠️ Username fetch failed: $e');
+      }
+
+      // -------------------------------------------------
+      // IMAGE → SUPABASE
+      // -------------------------------------------------
       if (fileType == "image") {
         storagePath = "images/$userId/$fileName";
 
@@ -63,16 +84,21 @@ class FirebaseFileUpload {
 
       onProgress(0.9);
 
+      // -------------------------------------------------
+      // FIREBASE METADATA WRITE
+      // -------------------------------------------------
       final Map<String, dynamic> data = {
         "userId": userId,
+        "userName": userName, // ✅ ADDED
         "downloadUrl": downloadUrl,
         "storagePath": storagePath,
         "type": fileType,
         "isStory": isStory,
         "platform": platform,
         "description": description,
-        "status":
-            fileType == "image" ? "uploaded" : "pending_upload",
+        "status": fileType == "image"
+            ? "uploaded"
+            : "pending_upload",
         "isApproved": false,
         "uploadedAt": ServerValue.timestamp,
       };
@@ -81,7 +107,9 @@ class FirebaseFileUpload {
 
       onProgress(1.0);
       onComplete(data);
-    } catch (e) {
+    } catch (e, st) {
+      debugPrint('🔥 Upload failed: $e');
+      debugPrintStack(stackTrace: st);
       onError(e.toString());
     }
   }

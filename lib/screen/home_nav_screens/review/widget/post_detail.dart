@@ -150,12 +150,13 @@ class _PostDetailState extends State<PostDetail> {
                               child: Column(
                                 crossAxisAlignment: CrossAxisAlignment.start,
                                 children: [
+                                  Text('@${comment['userName'] ?? ''}',style: Theme.of(context).textTheme.bodySmall?.copyWith(color: Theme.of(context).colorScheme.secondary),),
                                   // ---------- COMMENT TEXT ----------
                                   Text(
                                     comment['text'] ?? '',
                                     style: Theme.of(
                                       context,
-                                    ).textTheme.bodyMedium,
+                                    ).textTheme.bodyMedium?.copyWith(fontWeight: FontWeight.bold),
                                   ),
 
                                   const SizedBox(height: 4),
@@ -239,6 +240,7 @@ class _PostDetailState extends State<PostDetail> {
                         if (text.isEmpty) return;
                         context.read<CommentCubit>().postComment(
                           postId: widget.uploadedMedia.id,
+                          userName: widget.uploadedMedia.userName,
                           text: _commentController.text.trim(),
                         );
                         debugPrint('Send comment: $text');
