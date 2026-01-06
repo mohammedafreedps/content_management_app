@@ -122,6 +122,11 @@ class _ReviewCard extends StatelessWidget {
                   context,
                 ).textTheme.labelSmall?.copyWith(color: Colors.grey),
               ),
+              SizedBox(width: AppSpacing.md,),
+              media.isApproved? Chip(
+                  label: Text('Approved'),
+                  visualDensity: VisualDensity.compact,
+                ) : SizedBox.shrink(),
             ],
           ),
 

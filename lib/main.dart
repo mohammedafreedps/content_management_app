@@ -3,6 +3,7 @@ import 'package:content_managing_app/firebase_funtions/firebase_auth_funtions.da
 import 'package:content_managing_app/firebase_options.dart';
 import 'package:content_managing_app/screen/home_nav_screens/add_media/cubit/fire_upload_cubit.dart';
 import 'package:content_managing_app/screen/home_nav_screens/review/cubit/comment/comment_cubit.dart';
+import 'package:content_managing_app/screen/home_nav_screens/review/cubit/cubit/approve_post_cubit.dart';
 import 'package:content_managing_app/screen/home_nav_screens/review/cubit/delete_post/delete_post_cubit.dart';
 import 'package:content_managing_app/screen/home_screen/home_screen.dart';
 import 'package:content_managing_app/screen/login_signup/cubit/login/login_cubit.dart';
@@ -44,6 +45,7 @@ class MyApp extends StatelessWidget {
         BlocProvider(create: (context) => FileUploadCubit()),
         BlocProvider(create: (context) => CommentCubit()),
         BlocProvider(create: (context) => DeletePostCubit()),
+        BlocProvider(create: (context) => ApprovePostCubit()),
       ],
       child: MaterialApp(
         debugShowCheckedModeBanner: false,
