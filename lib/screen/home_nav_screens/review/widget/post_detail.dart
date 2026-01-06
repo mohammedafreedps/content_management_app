@@ -35,6 +35,19 @@ class _PostDetailState extends State<PostDetail> {
       resizeToAvoidBottomInset: true,
       appBar: AppBar(
         title: Text(widget.uploadedMedia.isStory ? 'Story' : 'Post'),
+        actions: [
+          PopupMenuButton(
+            onSelected: (value) {
+              
+            },
+            itemBuilder: (context) => [
+              const PopupMenuItem(value: 'edit', child: Text('Edit')),
+              const PopupMenuItem(value: 'approve', child: Text('Approve')),
+              const PopupMenuItem(value: 'delete', child: Text('Delete')),
+              const PopupMenuItem(value: 'schedule', child: Text('Schedule')),
+            ],
+          ),
+        ],
       ),
 
       // ================= CONTENT =================
@@ -48,15 +61,19 @@ class _PostDetailState extends State<PostDetail> {
               width: screen.width * 0.9,
               height: screen.height * 0.55,
               decoration: BoxDecoration(
-                color: Theme.of(context).colorScheme.primary,
+                color: widget.uploadedMedia.storagePath.isEmpty
+                    ? Theme.of(context).colorScheme.primary
+                    : Colors.transparent,
                 borderRadius: BorderRadius.circular(AppRadius.md),
               ),
               alignment: Alignment.center,
-              child: Icon(
-                Icons.content_copy_outlined,
-                size: 48,
-                color: Theme.of(context).colorScheme.surface,
-              ),
+              child: widget.uploadedMedia.storagePath.isNotEmpty
+                  ? Hero(tag: widget.uploadedMedia.id, child: Image.network(widget.uploadedMedia.storagePath))
+                  : Icon(
+                      Icons.content_copy_outlined,
+                      size: 48,
+                      color: Theme.of(context).colorScheme.surface,
+                    ),
             ),
 
             const SizedBox(height: AppSpacing.lg),

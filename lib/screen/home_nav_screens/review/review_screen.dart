@@ -130,7 +130,7 @@ class _ReviewCard extends StatelessWidget {
           // ---------------- MEDIA PLACEHOLDER ----------------
           AspectRatio(
             aspectRatio: 1,
-            child: Container(
+            child: media.storagePath.isNotEmpty ? Hero(tag: media.id, child: Image.network(media.storagePath))  : Container(
               alignment: Alignment.center,
               decoration: BoxDecoration(
                 borderRadius: BorderRadius.circular(8),

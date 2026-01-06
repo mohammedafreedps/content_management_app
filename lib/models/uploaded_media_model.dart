@@ -34,7 +34,7 @@ class UploadedMedia {
       isStory: map['isStory'] ?? false,
       platform: map['platform'] ?? 'instagram',
       status: map['status'] ?? 'pending_upload',
-      storagePath: map['storagePath'] ?? '',
+      storagePath: map['downloadUrl'] ?? '',
       type: map['type'] ?? 'image',
       isApproved: map['isApproved'] ?? false,
       uploadedAt: DateTime.fromMillisecondsSinceEpoch(

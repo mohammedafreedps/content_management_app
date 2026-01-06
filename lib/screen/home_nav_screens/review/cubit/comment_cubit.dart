@@ -17,7 +17,8 @@ class CommentCubit extends Cubit<CommentState> {
       return;
     }
     try {
-      FirebaseCommentFunctions.instance.postComment(postId: postId, userId: userId!, text: text, onSuccess: (){
+      
+      await FirebaseCommentFunctions.instance.postComment(postId: postId, userId: userId!, text: text, onSuccess: (){
         emit(CommentedSuccsussState());
       }, onError: (error){
         emit(CommentFailedState(message: error));
