@@ -1,3 +1,4 @@
+import 'package:content_managing_app/API_KEY.dart';
 import 'package:content_managing_app/firebase_funtions/firebase_auth_funtions.dart';
 import 'package:content_managing_app/firebase_options.dart';
 import 'package:content_managing_app/screen/home_nav_screens/add_media/cubit/fire_upload_cubit.dart';
@@ -12,12 +13,22 @@ import 'package:firebase_core/firebase_core.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:google_fonts/google_fonts.dart';
+import 'package:supabase_flutter/supabase_flutter.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
   await Firebase.initializeApp(options: DefaultFirebaseOptions.currentPlatform);
+  await Supabase.initialize(
+    url: ApiKey.photoProjectUrl,
+    anonKey: ApiKey.photoAnonKey,
+  );
   runApp(const MyApp());
 }
+
+// final SupabaseClient secondarySupabaseClient = SupabaseClient(
+//   'YOUR_SECONDARY_SUPABASE_URL',
+//   'YOUR_SECONDARY_ANON_KEY',
+// );
 
 class MyApp extends StatelessWidget {
   const MyApp({super.key});
@@ -53,12 +64,12 @@ class MyApp extends StatelessWidget {
                 bodyColor: const Color.fromARGB(255, 13, 71, 21),
                 displayColor: const Color.fromARGB(255, 13, 71, 21),
               ),
-              extensions: const[
-                AppColors(
-                  calendarActive: Color.fromARGB(255, 233, 238, 217),
-                  calendarInactive: Colors.transparent
-                )
-              ]
+          extensions: const [
+            AppColors(
+              calendarActive: Color.fromARGB(255, 233, 238, 217),
+              calendarInactive: Colors.transparent,
+            ),
+          ],
         ),
         title: 'Content Managing App',
         home: StreamBuilder<bool>(
@@ -86,17 +97,13 @@ class MyApp extends StatelessWidget {
 }
 
 extension ThemeX on BuildContext {
-  AppColors get appColors =>
-      Theme.of(this).extension<AppColors>()!;
+  AppColors get appColors => Theme.of(this).extension<AppColors>()!;
 }
 
 extension ScreenX on BuildContext {
   ScreenSize get screenSize {
     final size = MediaQuery.of(this).size;
 
-    return ScreenSize(
-      width: size.width,
-      height: size.height,
-    );
+    return ScreenSize(width: size.width, height: size.height);
   }
 }
