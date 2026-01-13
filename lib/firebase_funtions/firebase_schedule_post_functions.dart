@@ -7,12 +7,11 @@ class FirebaseScheduledPostFunctions {
   FirebaseScheduledPostFunctions._();
   static final instance = FirebaseScheduledPostFunctions._();
 
-  final DatabaseReference _db =
-      FirebaseDatabase.instanceFor(
-        app: Firebase.app(),
-        databaseURL:
-            'https://content-review-bbd55-default-rtdb.asia-southeast1.firebasedatabase.app',
-      ).ref();
+  final DatabaseReference _db = FirebaseDatabase.instanceFor(
+    app: Firebase.app(),
+    databaseURL:
+        'https://content-review-bbd55-default-rtdb.asia-southeast1.firebasedatabase.app',
+  ).ref();
 
   // =========================================================
   // READ: Stream scheduled & approved posts for a date
@@ -26,47 +25,40 @@ class FirebaseScheduledPostFunctions {
         .equalTo(scheduledDate)
         .onValue
         .map((event) {
-      try {
-        final value = event.snapshot.value;
+          try {
+            final value = event.snapshot.value;
 
-        if (value == null || value is! Map) {
-          return <UploadedMedia>[];
-        }
+            if (value == null || value is! Map) {
+              return <UploadedMedia>[];
+            }
 
-        final Map<dynamic, dynamic> raw =
-            Map<dynamic, dynamic>.from(value);
+            final Map<dynamic, dynamic> raw = Map<dynamic, dynamic>.from(value);
 
-        final List<UploadedMedia> result = [];
+            final List<UploadedMedia> result = [];
 
-        for (final entry in raw.entries) {
-          final data = Map<dynamic, dynamic>.from(entry.value);
+            for (final entry in raw.entries) {
+              final data = Map<dynamic, dynamic>.from(entry.value);
 
-          // Extra safety filters
-          if (data['isApproved'] != true) continue;
-          if (data['scheduledDate'] == null) continue;
+              // Extra safety filters
+              if (data['isApproved'] != true) continue;
+              if (data['scheduledDate'] == null) continue;
 
-          result.add(
-            UploadedMedia.fromMap(
-              entry.key,
-              data,
-            ),
-          );
-        }
+              result.add(UploadedMedia.fromMap(entry.key, data));
+            }
 
-        result.sort(
-          (a, b) => a.uploadedAt.compareTo(b.uploadedAt),
-        );
+            result.sort((a, b) => a.uploadedAt.compareTo(b.uploadedAt));
 
-        return result;
-      } catch (e, st) {
-        debugPrint('🔥 Scheduled post parse error: $e');
-        debugPrintStack(stackTrace: st);
-        return <UploadedMedia>[];
-      }
-    }).handleError((error, stackTrace) {
-      debugPrint('🔥 Scheduled post stream error: $error');
-      debugPrintStack(stackTrace: stackTrace);
-    });
+            return result;
+          } catch (e, st) {
+            debugPrint('🔥 Scheduled post parse error: $e');
+            debugPrintStack(stackTrace: st);
+            return <UploadedMedia>[];
+          }
+        })
+        .handleError((error, stackTrace) {
+          debugPrint('🔥 Scheduled post stream error: $error');
+          debugPrintStack(stackTrace: stackTrace);
+        });
   }
 
   // =========================================================
@@ -95,9 +87,7 @@ class FirebaseScheduledPostFunctions {
   // =========================================================
   // OPTIONAL: Unschedule a post (clean revert)
   // =========================================================
-  Future<void> clearScheduledDate({
-    required String postId,
-  }) async {
+  Future<void> clearScheduledDate({required String postId}) async {
     try {
       await _db.child('uploads').child(postId).update({
         'scheduledDate': null,
@@ -108,5 +98,52 @@ class FirebaseScheduledPostFunctions {
       debugPrintStack(stackTrace: st);
       rethrow;
     }
+  }
+
+  Stream<Set<DateTime>> streamScheduledDaysForMonth(DateTime month) {
+    final String monthPrefix =
+        "${month.year}-${month.month.toString().padLeft(2, '0')}";
+
+    return _db
+        .child('uploads')
+        .orderByChild('scheduledDate')
+        .startAt(monthPrefix)
+        .endAt("$monthPrefix\uf8ff")
+        .onValue
+        .map((event) {
+          final snapshot = event.snapshot.value;
+
+          if (snapshot == null || snapshot is! Map) {
+            return <DateTime>{};
+          }
+
+          final Map<dynamic, dynamic> raw = Map<dynamic, dynamic>.from(
+            snapshot,
+          );
+
+          final Set<DateTime> result = {};
+
+          for (final entry in raw.entries) {
+            final data = Map<dynamic, dynamic>.from(entry.value);
+
+            if (data['isApproved'] != true) continue;
+            if (data['scheduledDate'] == null) continue;
+
+            final String dateStr = data['scheduledDate']; // yyyy-MM-dd
+
+            final parts = dateStr.split('-');
+            if (parts.length != 3) continue;
+
+            final dt = DateTime(
+              int.parse(parts[0]),
+              int.parse(parts[1]),
+              int.parse(parts[2]),
+            );
+
+            result.add(dt);
+          }
+
+          return result;
+        });
   }
 }

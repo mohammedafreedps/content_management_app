@@ -48,10 +48,19 @@ class _DashboardScreenState extends State<DashboardScreen> {
               const SizedBox(height: AppSpacing.xl),
 
               // ---------------- CALENDAR ----------------
-              CalenderView(
-                selectedDate: selectedDate,
-                onDateSelected: (date) {
-                  setState(() => selectedDate = date);
+              StreamBuilder<Set<DateTime>>(
+                stream: FirebaseScheduledPostFunctions.instance
+                    .streamScheduledDaysForMonth(selectedDate),
+                builder: (context, snapshot) {
+                  final scheduledDates = snapshot.data ?? {};
+
+                  return CalenderView(
+                    selectedDate: selectedDate,
+                    onDateSelected: (date) {
+                      setState(() => selectedDate = date);
+                    },
+                    scheduledDates: scheduledDates,
+                  );
                 },
               ),
 
@@ -64,11 +73,8 @@ class _DashboardScreenState extends State<DashboardScreen> {
                       .streamScheduledPostsForDate(dateKey),
                   builder: (context, snapshot) {
                     // ---------- LOADING ----------
-                    if (snapshot.connectionState ==
-                        ConnectionState.waiting) {
-                      return const Center(
-                        child: CircularProgressIndicator(),
-                      );
+                    if (snapshot.connectionState == ConnectionState.waiting) {
+                      return const Center(child: CircularProgressIndicator());
                     }
 
                     // ---------- ERROR ----------
@@ -99,54 +105,54 @@ class _DashboardScreenState extends State<DashboardScreen> {
                         final post = posts[index];
 
                         return InkWell(
-                          onTap: (){
-                            Navigator.push(context, MaterialPageRoute(builder: (context)=> PostDetail(uploadedMedia: post)));
+                          onTap: () {
+                            Navigator.push(
+                              context,
+                              MaterialPageRoute(
+                                builder: (context) =>
+                                    PostDetail(uploadedMedia: post),
+                              ),
+                            );
                           },
                           child: Container(
                             padding: const EdgeInsets.all(AppSpacing.md),
                             decoration: BoxDecoration(
-                              color:
-                                  Theme.of(context).colorScheme.surface,
-                              borderRadius:
-                                  BorderRadius.circular(12),
+                              color: Theme.of(context).colorScheme.surface,
+                              borderRadius: BorderRadius.circular(12),
                             ),
                             child: Column(
-                              crossAxisAlignment:
-                                  CrossAxisAlignment.start,
+                              crossAxisAlignment: CrossAxisAlignment.start,
                               children: [
                                 // PLATFORM + STORY
                                 Row(
                                   children: [
                                     Text(
                                       post.platform.toUpperCase(),
-                                      style: Theme.of(context)
-                                          .textTheme
-                                          .labelSmall,
+                                      style: Theme.of(
+                                        context,
+                                      ).textTheme.labelSmall,
                                     ),
                                     const SizedBox(width: 8),
                                     if (post.isStory)
                                       const Chip(
                                         label: Text('Story'),
-                                        visualDensity:
-                                            VisualDensity.compact,
+                                        visualDensity: VisualDensity.compact,
                                       ),
                                   ],
                                 ),
-                          
+
                                 const SizedBox(height: 8),
-                          
+
                                 // DESCRIPTION
                                 Text(
                                   post.description.isNotEmpty
                                       ? post.description
                                       : 'No description',
-                                  style: Theme.of(context)
-                                      .textTheme
-                                      .bodyMedium,
+                                  style: Theme.of(context).textTheme.bodyMedium,
                                 ),
-                          
+
                                 const SizedBox(height: 8),
-                          
+
                                 // META INFO
                                 Row(
                                   mainAxisAlignment:
@@ -154,17 +160,16 @@ class _DashboardScreenState extends State<DashboardScreen> {
                                   children: [
                                     Text(
                                       'Scheduled: ${post.scheduledDate}',
-                                      style: Theme.of(context)
-                                          .textTheme
-                                          .labelSmall,
+                                      style: Theme.of(
+                                        context,
+                                      ).textTheme.labelSmall,
                                     ),
                                     Text(
                                       'Uploaded: ${_formatDate(post.uploadedAt)}',
                                       style: Theme.of(context)
                                           .textTheme
                                           .labelSmall
-                                          ?.copyWith(
-                                              color: Colors.grey),
+                                          ?.copyWith(color: Colors.grey),
                                     ),
                                   ],
                                 ),
