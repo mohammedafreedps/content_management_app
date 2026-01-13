@@ -16,6 +16,7 @@ class DashboardScreen extends StatefulWidget {
 
 class _DashboardScreenState extends State<DashboardScreen> {
   DateTime selectedDate = DateTime.now();
+  bool selctedDate = false;
 
   @override
   Widget build(BuildContext context) {
@@ -73,7 +74,9 @@ class _DashboardScreenState extends State<DashboardScreen> {
                       .streamScheduledPostsForDate(dateKey),
                   builder: (context, snapshot) {
                     // ---------- LOADING ----------
-                    if (snapshot.connectionState == ConnectionState.waiting) {
+                    if (snapshot.connectionState == ConnectionState.waiting &&
+                        snapshot.data == null && selctedDate) {
+                          selctedDate = true;
                       return const Center(child: CircularProgressIndicator());
                     }
 
