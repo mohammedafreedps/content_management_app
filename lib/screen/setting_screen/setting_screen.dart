@@ -1,4 +1,5 @@
 import 'package:content_managing_app/screen/widgets/snack_bar_error_messenger.dart';
+import 'package:content_managing_app/services/firebase_funtions/current_user_role.dart';
 import 'package:content_managing_app/services/firebase_funtions/firebase_auth_funtions.dart';
 import 'package:content_managing_app/services/media_cache_service.dart';
 import 'package:content_managing_app/theme/app_spacing.dart';
@@ -53,6 +54,9 @@ class _SettingScreenState extends State<SettingScreen> {
                   ),
                 ),
                 Opacity(opacity: 0.2, child: Divider()),
+                SizedBox(height: AppSpacing.lg,),
+                if(CurrentUserRole.instance.isEditor)
+                Text('Role: Editor',style: Theme.of(context).textTheme.bodySmall?.copyWith(color: Colors.grey),)
               ],
             ),
             Text('by Mohammed Afreed',style: Theme.of(context).textTheme.bodySmall,)

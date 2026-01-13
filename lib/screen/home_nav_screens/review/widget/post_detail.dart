@@ -1,5 +1,6 @@
 import 'dart:io';
 
+import 'package:content_managing_app/services/firebase_funtions/current_user_role.dart';
 import 'package:content_managing_app/services/firebase_funtions/firebase_comment_functions.dart';
 import 'package:content_managing_app/helper_funtions/format_comment_time.dart';
 import 'package:content_managing_app/helper_funtions/to_date_key.dart';
@@ -69,8 +70,8 @@ class _PostDetailState extends State<PostDetail> {
           appBar: AppBar(
             title: Text(widget.uploadedMedia.isStory ? 'Story' : 'Post'),
             actions: [
-              widget.uploadedMedia.isApproved
-                  ? IconButton(
+              if (widget.uploadedMedia.isApproved && CurrentUserRole.instance.isEditor || CurrentUserRole.instance.isAdmin)
+                   IconButton(
                       onPressed: () async {
                         DateTime? date = await showDatePicker(
                           context: context,
@@ -84,42 +85,49 @@ class _PostDetailState extends State<PostDetail> {
                         );
                       },
                       icon: Icon(Icons.schedule),
-                    )
-                  : SizedBox.shrink(),
-              PopupMenuButton(
-                onSelected: (value) async {
-                  if (value == 'delete') {
-                    showDialog(
-                      context: context,
-                      builder: (_) => ConfirmDialog(
-                        message: 'Do you want to delete this post',
-                        title: 'Delete',
-                        confirmText: 'yes',
-                        cancelText: 'no',
-                        onConfirm: () {
-                          context.read<DeletePostCubit>().deletePost(
+                    ),
+                 
+              CurrentUserRole.instance.isViewer
+                  ? SizedBox.shrink()
+                  : PopupMenuButton(
+                      onSelected: (value) async {
+                        if (value == 'delete') {
+                          showDialog(
+                            context: context,
+                            builder: (_) => ConfirmDialog(
+                              message: 'Do you want to delete this post',
+                              title: 'Delete',
+                              confirmText: 'yes',
+                              cancelText: 'no',
+                              onConfirm: () {
+                                context.read<DeletePostCubit>().deletePost(
+                                  postId: widget.uploadedMedia.id,
+                                );
+                              },
+                            ),
+                          );
+                        }
+                        if (value == 'approve') {
+                          context.read<ApprovePostCubit>().approvePost(
                             postId: widget.uploadedMedia.id,
                           );
-                        },
-                      ),
-                    );
-                  }
-                  if (value == 'approve') {
-                    context.read<ApprovePostCubit>().approvePost(
-                      postId: widget.uploadedMedia.id,
-                    );
-                  }
-                },
-                itemBuilder: (context) => [
-                  const PopupMenuItem(value: 'edit', child: Text('Edit')),
-                  if (!widget.uploadedMedia.isApproved)
-                    const PopupMenuItem(
-                      value: 'approve',
-                      child: Text('Approve'),
+                        }
+                      },
+                      itemBuilder: (context) => [
+                        if (CurrentUserRole.instance.isAdmin)
+                        const PopupMenuItem(value: 'edit', child: Text('Edit')),
+                        if (!widget.uploadedMedia.isApproved)
+                          const PopupMenuItem(
+                            value: 'approve',
+                            child: Text('Approve'),
+                          ),
+                        if (CurrentUserRole.instance.isAdmin)
+                          const PopupMenuItem(
+                            value: 'delete',
+                            child: Text('Delete'),
+                          ),
+                      ],
                     ),
-                  const PopupMenuItem(value: 'delete', child: Text('Delete')),
-                ],
-              ),
             ],
           ),
 

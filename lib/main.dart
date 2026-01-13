@@ -1,4 +1,5 @@
 import 'package:content_managing_app/API_KEY.dart';
+import 'package:content_managing_app/services/firebase_funtions/current_user_role.dart';
 import 'package:content_managing_app/services/firebase_funtions/firebase_auth_funtions.dart';
 import 'package:content_managing_app/firebase_options.dart';
 import 'package:content_managing_app/screen/home_nav_screens/add_media/cubit/fire_upload_cubit.dart';
@@ -12,6 +13,7 @@ import 'package:content_managing_app/screen/login_signup/cubit/signup/signup_cub
 import 'package:content_managing_app/screen/login_signup/login_signup.dart';
 import 'package:content_managing_app/theme/app_colors.dart';
 import 'package:content_managing_app/theme/screen_size.dart';
+import 'package:firebase_auth/firebase_auth.dart';
 import 'package:firebase_core/firebase_core.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
@@ -82,20 +84,40 @@ class MyApp extends StatelessWidget {
         home: StreamBuilder<bool>(
           stream: FirebaseAuthFunction.instance.authStateStream(),
           builder: (context, snapshot) {
-            // 🔄 Waiting for Firebase response
             if (snapshot.connectionState == ConnectionState.waiting) {
               return const Scaffold(
                 body: Center(child: CircularProgressIndicator()),
               );
             }
 
-            // 🔐 Logged in
-            if (snapshot.data == true) {
-              return HomeScreen();
+            // Logged out
+            if (snapshot.data != true) {
+              CurrentUserRole.instance.clear();
+              return LoginSignupScreen();
             }
 
-            // 🚪 Logged out
-            return LoginSignupScreen();
+            // Logged in → load role
+            final uid = FirebaseAuth.instance.currentUser!.uid;
+
+            return FutureBuilder(
+              future: CurrentUserRole.instance.loadFromFirebase(uid),
+              builder: (context, roleSnapshot) {
+                if (roleSnapshot.connectionState == ConnectionState.waiting) {
+                  return const Scaffold(
+                    body: Center(child: CircularProgressIndicator()),
+                  );
+                }
+
+                if (roleSnapshot.hasError) {
+                  return const Scaffold(
+                    body: Center(child: Text("Failed to load user role")),
+                  );
+                }
+
+                // ✅ Role loaded — now safe to show app
+                return HomeScreen();
+              },
+            );
           },
         ),
       ),
