@@ -14,28 +14,54 @@ class HomeScreen extends StatefulWidget {
 class _HomeScreenState extends State<HomeScreen> {
   int _currentIndex = 0;
 
-  final List<Widget> _screens = const [
-    DashboardScreen(),
-    ReviewScreen(),
-    AddMediaScreen(),
-  ];
+  final _dashboardKey = GlobalKey<NavigatorState>();
+  final _reviewKey = GlobalKey<NavigatorState>();
+  final _addKey = GlobalKey<NavigatorState>();
+
+  late final List<Widget> _tabs;
+
+  @override
+  void initState() {
+    super.initState();
+
+    _tabs = [
+      _buildTab(_dashboardKey, const DashboardScreen()),
+      _buildTab(_reviewKey, const ReviewScreen()),
+      _buildTab(_addKey, const AddMediaScreen()),
+    ];
+  }
+
+  Widget _buildTab(GlobalKey<NavigatorState> key, Widget root) {
+    return Navigator(
+      key: key,
+      onGenerateRoute: (_) => MaterialPageRoute(builder: (_) => root),
+    );
+  }
+
+  Future<bool> _onWillPop() async {
+    final navigator = [
+      _dashboardKey,
+      _reviewKey,
+      _addKey,
+    ][_currentIndex];
+
+    if (navigator.currentState!.canPop()) {
+      navigator.currentState!.pop();
+      return false;
+    }
+    return true;
+  }
 
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
-      body: IndexedStack(index: _currentIndex, children: _screens),
-      bottomNavigationBar: ValueListenableBuilder(
-        valueListenable: CurrentUserRole.instance.listenable,
-        builder: (context, role, _) {
-          return BottomNavigationBar(
-            currentIndex: _currentIndex,
-            onTap: (index) {
-              setState(() {
-                _currentIndex = index;
-              });
-            },
-            type: BottomNavigationBarType.fixed,
-            items: [
+    return WillPopScope(
+      onWillPop: _onWillPop,
+      child: Scaffold(
+        body: IndexedStack(index: _currentIndex, children: _tabs),
+        bottomNavigationBar: ValueListenableBuilder(
+          valueListenable: CurrentUserRole.instance.listenable,
+          builder: (context, role, _) {
+            final items = <BottomNavigationBarItem>[
               const BottomNavigationBarItem(
                 icon: Icon(Icons.dashboard),
                 label: 'Dashboard',
@@ -49,9 +75,18 @@ class _HomeScreenState extends State<HomeScreen> {
                   icon: Icon(Icons.add),
                   label: 'Add Media',
                 ),
-            ],
-          );
-        },
+            ];
+
+            return BottomNavigationBar(
+              currentIndex: _currentIndex,
+              onTap: (index) {
+                setState(() => _currentIndex = index);
+              },
+              type: BottomNavigationBarType.fixed,
+              items: items,
+            );
+          },
+        ),
       ),
     );
   }

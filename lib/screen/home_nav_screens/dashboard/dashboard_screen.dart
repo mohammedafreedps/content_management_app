@@ -16,7 +16,7 @@ class DashboardScreen extends StatefulWidget {
 
 class _DashboardScreenState extends State<DashboardScreen> {
   DateTime selectedDate = DateTime.now();
-  bool selctedDate = false;
+  bool isSelected = false;
 
   @override
   Widget build(BuildContext context) {
@@ -24,7 +24,7 @@ class _DashboardScreenState extends State<DashboardScreen> {
 
     return Scaffold(
       body: SafeArea(
-        child: Padding(
+        child: SingleChildScrollView(
           padding: const EdgeInsets.all(AppSpacing.screenPadding),
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
@@ -39,7 +39,12 @@ class _DashboardScreenState extends State<DashboardScreen> {
                   ),
                   IconButton(
                     onPressed: () {
-                      Navigator.push(context, MaterialPageRoute(builder: (_)=> SettingScreen()));
+                      Navigator.push(
+                        context,
+                        MaterialPageRoute(
+                          builder: (_) => const SettingScreen(),
+                        ),
+                      );
                     },
                     icon: const Icon(Icons.settings),
                   ),
@@ -67,123 +72,127 @@ class _DashboardScreenState extends State<DashboardScreen> {
 
               const SizedBox(height: AppSpacing.lg),
 
-              // ---------------- SCHEDULED POSTS ----------------
-              Expanded(
-                child: StreamBuilder<List<UploadedMedia>>(
-                  stream: FirebaseScheduledPostFunctions.instance
-                      .streamScheduledPostsForDate(dateKey),
-                  builder: (context, snapshot) {
-                    // ---------- LOADING ----------
-                    if (snapshot.connectionState == ConnectionState.waiting &&
-                        snapshot.data == null && selctedDate) {
-                          selctedDate = true;
-                      return const Center(child: CircularProgressIndicator());
-                    }
+              // ---------------- POSTS ----------------
+              StreamBuilder<List<UploadedMedia>>(
+                stream: FirebaseScheduledPostFunctions.instance
+                    .streamScheduledPostsForDate(dateKey),
+                builder: (context, snapshot) {
+                  if (snapshot.connectionState == ConnectionState.waiting &&
+                      snapshot.data == null && isSelected) {
+                        isSelected = true;
+                    return const Padding(
+                      padding: EdgeInsets.all(32),
+                      child: Center(child: CircularProgressIndicator()),
+                    );
+                  }
 
-                    // ---------- ERROR ----------
-                    if (snapshot.hasError) {
-                      return const Center(
-                        child: Text('Failed to load scheduled posts'),
-                      );
-                    }
+                  if (snapshot.hasError) {
+                    return const Padding(
+                      padding: EdgeInsets.all(32),
+                      child: Text('Failed to load scheduled posts'),
+                    );
+                  }
 
-                    final posts = snapshot.data ?? [];
+                  final posts = snapshot.data ?? [];
 
-                    // ---------- EMPTY ----------
-                    if (posts.isEmpty) {
-                      return Center(
-                        child: Text(
-                          'No posts scheduled for $dateKey',
-                          style: Theme.of(context).textTheme.bodyMedium,
+                  if (posts.isEmpty) {
+                    return Padding(
+                      padding: const EdgeInsets.all(32),
+                      child: Text(
+                        'No posts scheduled for $dateKey',
+                        style: Theme.of(context).textTheme.bodyMedium,
+                      ),
+                    );
+                  }
+
+                  return ListView.separated(
+                    shrinkWrap: true,
+                    physics: const NeverScrollableScrollPhysics(),
+                    itemCount: posts.length,
+                    separatorBuilder: (_, _) =>
+                        const SizedBox(height: AppSpacing.sm),
+                    itemBuilder: (context, index) {
+                      final post = posts[index];
+
+                      return InkWell(
+                        onTap: () {
+                          Navigator.push(
+                            context,
+                            MaterialPageRoute(
+                              builder: (_) =>
+                                  PostDetail(uploadedMedia: post),
+                            ),
+                          );
+                        },
+                        child: Container(
+                          padding: const EdgeInsets.all(AppSpacing.md),
+                          decoration: BoxDecoration(
+                            color: Theme.of(context).colorScheme.surface,
+                            borderRadius: BorderRadius.circular(12),
+                          ),
+                          child: Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+                              // PLATFORM + STORY
+                              Row(
+                                children: [
+                                  Text(
+                                    post.platform.toUpperCase(),
+                                    style: Theme.of(context)
+                                        .textTheme
+                                        .labelSmall,
+                                  ),
+                                  const SizedBox(width: 8),
+                                  if (post.isStory)
+                                    const Chip(
+                                      label: Text('Story'),
+                                      visualDensity:
+                                          VisualDensity.compact,
+                                    ),
+                                ],
+                              ),
+
+                              const SizedBox(height: 8),
+
+                              // DESCRIPTION
+                              Text(
+                                post.description.isNotEmpty
+                                    ? post.description
+                                    : 'No description',
+                                style: Theme.of(context)
+                                    .textTheme
+                                    .bodyMedium,
+                              ),
+
+                              const SizedBox(height: 8),
+
+                              // META
+                              Row(
+                                mainAxisAlignment:
+                                    MainAxisAlignment.spaceBetween,
+                                children: [
+                                  Text(
+                                    'Scheduled: ${post.scheduledDate}',
+                                    style: Theme.of(context)
+                                        .textTheme
+                                        .labelSmall,
+                                  ),
+                                  Text(
+                                    'Uploaded: ${_formatDate(post.uploadedAt)}',
+                                    style: Theme.of(context)
+                                        .textTheme
+                                        .labelSmall
+                                        ?.copyWith(color: Colors.grey),
+                                  ),
+                                ],
+                              ),
+                            ],
+                          ),
                         ),
                       );
-                    }
-
-                    // ---------- LIST ----------
-                    return ListView.separated(
-                      itemCount: posts.length,
-                      separatorBuilder: (_, _) =>
-                          const SizedBox(height: AppSpacing.sm),
-                      itemBuilder: (context, index) {
-                        final post = posts[index];
-
-                        return InkWell(
-                          onTap: () {
-                            Navigator.push(
-                              context,
-                              MaterialPageRoute(
-                                builder: (context) =>
-                                    PostDetail(uploadedMedia: post),
-                              ),
-                            );
-                          },
-                          child: Container(
-                            padding: const EdgeInsets.all(AppSpacing.md),
-                            decoration: BoxDecoration(
-                              color: Theme.of(context).colorScheme.surface,
-                              borderRadius: BorderRadius.circular(12),
-                            ),
-                            child: Column(
-                              crossAxisAlignment: CrossAxisAlignment.start,
-                              children: [
-                                // PLATFORM + STORY
-                                Row(
-                                  children: [
-                                    Text(
-                                      post.platform.toUpperCase(),
-                                      style: Theme.of(
-                                        context,
-                                      ).textTheme.labelSmall,
-                                    ),
-                                    const SizedBox(width: 8),
-                                    if (post.isStory)
-                                      const Chip(
-                                        label: Text('Story'),
-                                        visualDensity: VisualDensity.compact,
-                                      ),
-                                  ],
-                                ),
-
-                                const SizedBox(height: 8),
-
-                                // DESCRIPTION
-                                Text(
-                                  post.description.isNotEmpty
-                                      ? post.description
-                                      : 'No description',
-                                  style: Theme.of(context).textTheme.bodyMedium,
-                                ),
-
-                                const SizedBox(height: 8),
-
-                                // META INFO
-                                Row(
-                                  mainAxisAlignment:
-                                      MainAxisAlignment.spaceBetween,
-                                  children: [
-                                    Text(
-                                      'Scheduled: ${post.scheduledDate}',
-                                      style: Theme.of(
-                                        context,
-                                      ).textTheme.labelSmall,
-                                    ),
-                                    Text(
-                                      'Uploaded: ${_formatDate(post.uploadedAt)}',
-                                      style: Theme.of(context)
-                                          .textTheme
-                                          .labelSmall
-                                          ?.copyWith(color: Colors.grey),
-                                    ),
-                                  ],
-                                ),
-                              ],
-                            ),
-                          ),
-                        );
-                      },
-                    );
-                  },
-                ),
+                    },
+                  );
+                },
               ),
             ],
           ),

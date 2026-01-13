@@ -72,6 +72,7 @@ class _ReviewScreenState extends State<ReviewScreen> {
                               MaterialPageRoute(
                                 builder: (context) =>
                                     PostDetail(uploadedMedia: items[index]),
+                                    settings: RouteSettings(arguments: 1),
                               ),
                             );
                           },
@@ -125,7 +126,7 @@ class _ReviewCard extends StatelessWidget {
                   context,
                 ).textTheme.labelSmall?.copyWith(color: Colors.grey),
               ),
-              SizedBox(width: AppSpacing.md),
+              SizedBox(width: AppSpacing.sm),
               media.isApproved
                   ? Chip(
                       label: Text('Approved'),
