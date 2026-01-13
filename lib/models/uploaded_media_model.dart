@@ -11,6 +11,9 @@ class UploadedMedia {
   final String userName;
   final DateTime uploadedAt;
 
+  // 🔥 NEW (non-breaking)
+  final String? scheduledDate; // yyyy-MM-dd
+
   UploadedMedia({
     required this.id,
     required this.userId,
@@ -23,6 +26,7 @@ class UploadedMedia {
     required this.isApproved,
     required this.userName,
     required this.uploadedAt,
+    this.scheduledDate,
   });
 
   factory UploadedMedia.fromMap(
@@ -43,6 +47,7 @@ class UploadedMedia {
       uploadedAt: DateTime.fromMillisecondsSinceEpoch(
         map['uploadedAt'] is int ? map['uploadedAt'] : 0,
       ),
+      scheduledDate: map['scheduledDate'], // ✅ SAFE
     );
   }
 
@@ -55,7 +60,10 @@ class UploadedMedia {
       'status': status,
       'storagePath': storagePath,
       'type': type,
+      'isApproved': isApproved,
+      'userName': userName,
       'uploadedAt': uploadedAt.millisecondsSinceEpoch,
+      if (scheduledDate != null) 'scheduledDate': scheduledDate,
     };
   }
 }

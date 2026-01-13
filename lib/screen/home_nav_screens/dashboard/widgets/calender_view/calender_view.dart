@@ -6,7 +6,14 @@ import 'package:content_managing_app/theme/app_spacing.dart';
 import 'package:flutter/material.dart';
 
 class CalenderView extends StatefulWidget {
-  const CalenderView({super.key});
+  final DateTime selectedDate;
+  final ValueChanged<DateTime> onDateSelected; // ✅ NEW
+
+  const CalenderView({
+    super.key,
+    required this.selectedDate,
+    required this.onDateSelected,
+  });
 
   @override
   State<CalenderView> createState() => _CalenderViewState();
@@ -17,10 +24,6 @@ class _CalenderViewState extends State<CalenderView> {
 
   final CalendarDetail calendar = CalendarDetail();
 
-  /// ✅ GLOBAL SELECTED DATE (single source of truth)
-  DateTime selectedDate = DateTime.now();
-
-  /// ✅ GLOBAL LISTS (usable for Firebase / logic)
   late List<DateTime> weekDates;
   late List<DateTime> monthDates;
 
@@ -49,7 +52,7 @@ class _CalenderViewState extends State<CalenderView> {
               isActive: isWeek,
               onTap: () => setState(() => isWeek = true),
             ),
-            SizedBox(width: AppSpacing.sm),
+            const SizedBox(width: AppSpacing.sm),
             DaysToggleButton(
               label: 'Month',
               isActive: !isWeek,
@@ -111,11 +114,10 @@ class _CalenderViewState extends State<CalenderView> {
     return Container(
       key: key,
       height: viewHeight,
-      padding: EdgeInsets.all(AppSpacing.sm),
+      padding: const EdgeInsets.all(AppSpacing.sm),
       decoration: BoxDecoration(
         color: context.appColors.calendarActive,
         borderRadius: BorderRadius.only(
-          topLeft: isWeek ? Radius.circular(0) : Radius.circular(AppRadius.md),
           topRight: Radius.circular(AppRadius.md),
           bottomLeft: Radius.circular(AppRadius.md),
           bottomRight: Radius.circular(AppRadius.md),
@@ -124,15 +126,13 @@ class _CalenderViewState extends State<CalenderView> {
       child: ListView.separated(
         scrollDirection: Axis.horizontal,
         itemCount: weekDates.length,
-        separatorBuilder: (_, _) => SizedBox(width: AppSpacing.sm),
+        separatorBuilder: (_, _) => const SizedBox(width: AppSpacing.sm),
         itemBuilder: (context, index) {
           final date = weekDates[index];
-          final bool isSelected = _isSameDate(date, selectedDate);
+          final bool isSelected = _isSameDate(date, widget.selectedDate);
 
           return GestureDetector(
-            onTap: () {
-              setState(() => selectedDate = date);
-            },
+            onTap: () => widget.onDateSelected(date), // ✅ FIX
             child: Container(
               width: itemWidth,
               decoration: BoxDecoration(
@@ -148,7 +148,7 @@ class _CalenderViewState extends State<CalenderView> {
                     calendar.weekShort(date),
                     style: Theme.of(context).textTheme.bodySmall,
                   ),
-                  SizedBox(height: 6),
+                  const SizedBox(height: 6),
                   Text(
                     date.day.toString(),
                     style: Theme.of(context).textTheme.titleMedium,
@@ -177,7 +177,7 @@ class _CalenderViewState extends State<CalenderView> {
 
     return Container(
       key: key,
-      padding: EdgeInsets.all(AppSpacing.sm),
+      padding: const EdgeInsets.all(AppSpacing.sm),
       decoration: BoxDecoration(
         color: context.appColors.calendarActive,
         borderRadius: BorderRadius.circular(AppRadius.md),
@@ -194,12 +194,10 @@ class _CalenderViewState extends State<CalenderView> {
         ),
         itemBuilder: (context, index) {
           final date = monthDates[index];
-          final bool isSelected = _isSameDate(date, selectedDate);
+          final bool isSelected = _isSameDate(date, widget.selectedDate);
 
           return GestureDetector(
-            onTap: () {
-              setState(() => selectedDate = date);
-            },
+            onTap: () => widget.onDateSelected(date), // ✅ FIX
             child: Container(
               decoration: BoxDecoration(
                 color: isSelected
@@ -214,7 +212,7 @@ class _CalenderViewState extends State<CalenderView> {
                     calendar.weekShort(date),
                     style: Theme.of(context).textTheme.bodySmall,
                   ),
-                  SizedBox(height: 4),
+                  const SizedBox(height: 4),
                   Text(
                     date.day.toString(),
                     style: Theme.of(context).textTheme.titleMedium,
@@ -228,9 +226,6 @@ class _CalenderViewState extends State<CalenderView> {
     );
   }
 
-  // =========================================================
-  // DATE COMPARISON (SAFE)
-  // =========================================================
   bool _isSameDate(DateTime a, DateTime b) {
     return a.year == b.year && a.month == b.month && a.day == b.day;
   }

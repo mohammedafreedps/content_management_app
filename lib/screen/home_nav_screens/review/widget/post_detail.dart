@@ -1,10 +1,12 @@
 import 'package:content_managing_app/firebase_funtions/firebase_comment_functions.dart';
 import 'package:content_managing_app/helper_funtions/format_comment_time.dart';
+import 'package:content_managing_app/helper_funtions/to_date_key.dart';
 import 'package:content_managing_app/main.dart';
 import 'package:content_managing_app/models/uploaded_media_model.dart';
 import 'package:content_managing_app/screen/home_nav_screens/review/cubit/comment/comment_cubit.dart';
-import 'package:content_managing_app/screen/home_nav_screens/review/cubit/cubit/approve_post_cubit.dart';
+import 'package:content_managing_app/screen/home_nav_screens/review/cubit/approve_post/approve_post_cubit.dart';
 import 'package:content_managing_app/screen/home_nav_screens/review/cubit/delete_post/delete_post_cubit.dart';
+import 'package:content_managing_app/screen/home_nav_screens/review/cubit/schedule_post/schedule_post_cubit.dart';
 import 'package:content_managing_app/screen/widgets/comform_dialoge.dart';
 import 'package:content_managing_app/screen/widgets/snack_bar_error_messenger.dart';
 import 'package:content_managing_app/theme/app_radious.dart';
@@ -39,11 +41,14 @@ class _PostDetailState extends State<PostDetail> {
 
     return BlocListener<ApprovePostCubit, ApprovePostState>(
       listener: (context, state) {
-        if(state is ApproveFailedState){
+        if (state is ApproveFailedState) {
           snackBarErrorMessage(context: context, message: state.message);
         }
-        if(state is ApprovedState) {
-          snackBarErrorMessage(context: context, message: 'Current Post Approved');
+        if (state is ApprovedState) {
+          snackBarErrorMessage(
+            context: context,
+            message: 'Current Post Approved',
+          );
         }
       },
       child: BlocListener<DeletePostCubit, DeletePostState>(
@@ -61,8 +66,18 @@ class _PostDetailState extends State<PostDetail> {
           appBar: AppBar(
             title: Text(widget.uploadedMedia.isStory ? 'Story' : 'Post'),
             actions: [
+              widget.uploadedMedia.isApproved
+                  ? IconButton(
+                      onPressed: () async {
+                        DateTime? date =  await showDatePicker(context: context, firstDate: DateTime.now(), lastDate: DateTime(2040));
+                        if(date == null) return;
+                        context.read<SchedulePostCubit>().schedulePost(postId: widget.uploadedMedia.id, scheduledDate: toDateKey(date));
+                      },
+                      icon: Icon(Icons.schedule),
+                    )
+                  : SizedBox.shrink(),
               PopupMenuButton(
-                onSelected: (value) {
+                onSelected: (value) async {
                   if (value == 'delete') {
                     showDialog(
                       context: context,
@@ -93,10 +108,6 @@ class _PostDetailState extends State<PostDetail> {
                       child: Text('Approve'),
                     ),
                   const PopupMenuItem(value: 'delete', child: Text('Delete')),
-                  const PopupMenuItem(
-                    value: 'schedule',
-                    child: Text('Schedule'),
-                  ),
                 ],
               ),
             ],
