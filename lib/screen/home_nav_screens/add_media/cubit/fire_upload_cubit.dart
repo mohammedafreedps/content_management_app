@@ -1,7 +1,7 @@
 import 'dart:io';
 
 import 'package:bloc/bloc.dart';
-import 'package:content_managing_app/firebase_funtions/firebase_upload_funtions.dart';
+import 'package:content_managing_app/services/firebase_funtions/firebase_upload_funtions.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:meta/meta.dart';
 

@@ -1,6 +1,9 @@
-import 'package:content_managing_app/firebase_funtions/firebase_file_get_funtions.dart';
+import 'dart:io';
+
+import 'package:content_managing_app/services/firebase_funtions/firebase_file_get_funtions.dart';
 import 'package:content_managing_app/models/uploaded_media_model.dart';
 import 'package:content_managing_app/screen/home_nav_screens/review/widget/post_detail.dart';
+import 'package:content_managing_app/services/media_cache_service.dart';
 import 'package:content_managing_app/theme/app_spacing.dart';
 import 'package:flutter/material.dart';
 
@@ -122,6 +125,13 @@ class _ReviewCard extends StatelessWidget {
                   context,
                 ).textTheme.labelSmall?.copyWith(color: Colors.grey),
               ),
+              SizedBox(width: AppSpacing.md),
+              media.isApproved
+                  ? Chip(
+                      label: Text('Approved'),
+                      visualDensity: VisualDensity.compact,
+                    )
+                  : SizedBox.shrink(),
             ],
           ),
 
@@ -130,22 +140,45 @@ class _ReviewCard extends StatelessWidget {
           // ---------------- MEDIA PLACEHOLDER ----------------
           AspectRatio(
             aspectRatio: 1,
-            child: media.storagePath.isNotEmpty ? Hero(tag: media.id, child: Image.network(media.storagePath))  : Container(
-              alignment: Alignment.center,
-              decoration: BoxDecoration(
-                borderRadius: BorderRadius.circular(8),
-                color: Colors.black12,
-              ),
-              child: media.status == 'pending_upload'
-                  ? const Icon(
-                      Icons.cloud_upload_outlined,
-                      size: 48,
-                      color: Colors.grey,
-                    )
-                  : media.type == 'video'
-                  ? const Icon(Icons.play_circle_fill, size: 64)
-                  : const Icon(Icons.image, size: 64),
-            ),
+            child: media.storagePath.isNotEmpty
+                ? Hero(
+                    tag: media.id,
+                    child: FutureBuilder<File>(
+                      future: MediaCacheService.instance.getFile(
+                        media.storagePath,
+                      ),
+                      builder: (context, snapshot) {
+                        if (snapshot.connectionState ==
+                            ConnectionState.waiting) {
+                          return const Center(
+                            child: CircularProgressIndicator(),
+                          );
+                        }
+
+                        if (snapshot.hasError || !snapshot.hasData) {
+                          return const Icon(Icons.error);
+                        }
+
+                        return Image.file(snapshot.data!, fit: BoxFit.cover);
+                      },
+                    ),
+                  )
+                : Container(
+                    alignment: Alignment.center,
+                    decoration: BoxDecoration(
+                      borderRadius: BorderRadius.circular(8),
+                      color: Colors.black12,
+                    ),
+                    child: media.status == 'pending_upload'
+                        ? const Icon(
+                            Icons.cloud_upload_outlined,
+                            size: 48,
+                            color: Colors.grey,
+                          )
+                        : media.type == 'video'
+                        ? const Icon(Icons.play_circle_fill, size: 64)
+                        : const Icon(Icons.image, size: 64),
+                  ),
           ),
 
           const SizedBox(height: AppSpacing.md),

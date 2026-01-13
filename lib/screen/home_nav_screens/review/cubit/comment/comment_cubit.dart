@@ -1,5 +1,5 @@
 import 'package:bloc/bloc.dart';
-import 'package:content_managing_app/firebase_funtions/firebase_comment_functions.dart';
+import 'package:content_managing_app/services/firebase_funtions/firebase_comment_functions.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:meta/meta.dart';
 

@@ -6,7 +6,16 @@ import 'package:content_managing_app/theme/app_spacing.dart';
 import 'package:flutter/material.dart';
 
 class CalenderView extends StatefulWidget {
-  const CalenderView({super.key});
+  final DateTime selectedDate;
+  final ValueChanged<DateTime> onDateSelected;
+  final Set<DateTime> scheduledDates;
+
+  const CalenderView({
+    super.key,
+    required this.selectedDate,
+    required this.onDateSelected,
+    required this.scheduledDates,
+  });
 
   @override
   State<CalenderView> createState() => _CalenderViewState();
@@ -17,10 +26,6 @@ class _CalenderViewState extends State<CalenderView> {
 
   final CalendarDetail calendar = CalendarDetail();
 
-  /// ✅ GLOBAL SELECTED DATE (single source of truth)
-  DateTime selectedDate = DateTime.now();
-
-  /// ✅ GLOBAL LISTS (usable for Firebase / logic)
   late List<DateTime> weekDates;
   late List<DateTime> monthDates;
 
@@ -49,7 +54,7 @@ class _CalenderViewState extends State<CalenderView> {
               isActive: isWeek,
               onTap: () => setState(() => isWeek = true),
             ),
-            SizedBox(width: AppSpacing.sm),
+            const SizedBox(width: AppSpacing.sm),
             DaysToggleButton(
               label: 'Month',
               isActive: !isWeek,
@@ -100,22 +105,21 @@ class _CalenderViewState extends State<CalenderView> {
     final double itemWidth = isMobile
         ? 56
         : isTablet
-        ? 72
-        : 88;
+            ? 72
+            : 88;
     final double viewHeight = isMobile
         ? 80
         : isTablet
-        ? 96
-        : 110;
+            ? 96
+            : 110;
 
     return Container(
       key: key,
       height: viewHeight,
-      padding: EdgeInsets.all(AppSpacing.sm),
+      padding: const EdgeInsets.all(AppSpacing.sm),
       decoration: BoxDecoration(
         color: context.appColors.calendarActive,
         borderRadius: BorderRadius.only(
-          topLeft: isWeek ? Radius.circular(0) : Radius.circular(AppRadius.md),
           topRight: Radius.circular(AppRadius.md),
           bottomLeft: Radius.circular(AppRadius.md),
           bottomRight: Radius.circular(AppRadius.md),
@@ -124,15 +128,14 @@ class _CalenderViewState extends State<CalenderView> {
       child: ListView.separated(
         scrollDirection: Axis.horizontal,
         itemCount: weekDates.length,
-        separatorBuilder: (_, _) => SizedBox(width: AppSpacing.sm),
+        separatorBuilder: (_, _) => const SizedBox(width: AppSpacing.sm),
         itemBuilder: (context, index) {
           final date = weekDates[index];
-          final bool isSelected = _isSameDate(date, selectedDate);
+          final bool isSelected = _isSameDate(date, widget.selectedDate);
+          final bool hasPost = _hasPost(date);
 
           return GestureDetector(
-            onTap: () {
-              setState(() => selectedDate = date);
-            },
+            onTap: () => widget.onDateSelected(date),
             child: Container(
               width: itemWidth,
               decoration: BoxDecoration(
@@ -141,18 +144,37 @@ class _CalenderViewState extends State<CalenderView> {
                     : context.appColors.calendarActive,
                 borderRadius: BorderRadius.circular(12),
               ),
-              child: Column(
-                mainAxisAlignment: MainAxisAlignment.center,
+              child: Stack(
+                alignment: Alignment.center,
                 children: [
-                  Text(
-                    calendar.weekShort(date),
-                    style: Theme.of(context).textTheme.bodySmall,
+                  if (hasPost)
+                    Positioned.fill(
+                      child: Container(
+                        decoration: BoxDecoration(
+                          color: Colors.amber.withOpacity(0.15),
+                          borderRadius: BorderRadius.circular(12),
+                        ),
+                      ),
+                    ),
+
+                  Column(
+                    mainAxisAlignment: MainAxisAlignment.center,
+                    children: [
+                      Text(calendar.weekShort(date),
+                          style: Theme.of(context).textTheme.bodySmall),
+                      const SizedBox(height: 6),
+                      Text(date.day.toString(),
+                          style: Theme.of(context).textTheme.titleMedium),
+                    ],
                   ),
-                  SizedBox(height: 6),
-                  Text(
-                    date.day.toString(),
-                    style: Theme.of(context).textTheme.titleMedium,
-                  ),
+
+                  if (hasPost)
+                    const Positioned(
+                      top: 6,
+                      right: 6,
+                      child: Icon(Icons.star,
+                          size: 14, color: Colors.amber),
+                    ),
                 ],
               ),
             ),
@@ -177,7 +199,7 @@ class _CalenderViewState extends State<CalenderView> {
 
     return Container(
       key: key,
-      padding: EdgeInsets.all(AppSpacing.sm),
+      padding: const EdgeInsets.all(AppSpacing.sm),
       decoration: BoxDecoration(
         color: context.appColors.calendarActive,
         borderRadius: BorderRadius.circular(AppRadius.md),
@@ -194,12 +216,11 @@ class _CalenderViewState extends State<CalenderView> {
         ),
         itemBuilder: (context, index) {
           final date = monthDates[index];
-          final bool isSelected = _isSameDate(date, selectedDate);
+          final bool isSelected = _isSameDate(date, widget.selectedDate);
+          final bool hasPost = _hasPost(date);
 
           return GestureDetector(
-            onTap: () {
-              setState(() => selectedDate = date);
-            },
+            onTap: () => widget.onDateSelected(date),
             child: Container(
               decoration: BoxDecoration(
                 color: isSelected
@@ -207,18 +228,37 @@ class _CalenderViewState extends State<CalenderView> {
                     : context.appColors.calendarActive,
                 borderRadius: BorderRadius.circular(10),
               ),
-              child: Column(
-                mainAxisAlignment: MainAxisAlignment.center,
+              child: Stack(
+                alignment: Alignment.center,
                 children: [
-                  Text(
-                    calendar.weekShort(date),
-                    style: Theme.of(context).textTheme.bodySmall,
+                  if (hasPost)
+                    Positioned.fill(
+                      child: Container(
+                        decoration: BoxDecoration(
+                          color: Colors.amber.withOpacity(0.12),
+                          borderRadius: BorderRadius.circular(10),
+                        ),
+                      ),
+                    ),
+
+                  Column(
+                    mainAxisAlignment: MainAxisAlignment.center,
+                    children: [
+                      Text(calendar.weekShort(date),
+                          style: Theme.of(context).textTheme.bodySmall),
+                      const SizedBox(height: 4),
+                      Text(date.day.toString(),
+                          style: Theme.of(context).textTheme.titleMedium),
+                    ],
                   ),
-                  SizedBox(height: 4),
-                  Text(
-                    date.day.toString(),
-                    style: Theme.of(context).textTheme.titleMedium,
-                  ),
+
+                  if (hasPost)
+                    const Positioned(
+                      top: 6,
+                      right: 6,
+                      child: Icon(Icons.star,
+                          size: 12, color: Colors.amber),
+                    ),
                 ],
               ),
             ),
@@ -228,10 +268,14 @@ class _CalenderViewState extends State<CalenderView> {
     );
   }
 
-  // =========================================================
-  // DATE COMPARISON (SAFE)
-  // =========================================================
   bool _isSameDate(DateTime a, DateTime b) {
     return a.year == b.year && a.month == b.month && a.day == b.day;
+  }
+
+  bool _hasPost(DateTime date) {
+    return widget.scheduledDates.any((d) =>
+        d.year == date.year &&
+        d.month == date.month &&
+        d.day == date.day);
   }
 }
