@@ -1,4 +1,4 @@
-import 'package:content_managing_app/services/firebase_funtions/firebase_auth_funtions.dart';
+import 'package:content_managing_app/screen/setting_screen/setting_screen.dart';
 import 'package:content_managing_app/services/firebase_funtions/firebase_schedule_post_functions.dart';
 import 'package:content_managing_app/helper_funtions/to_date_key.dart';
 import 'package:content_managing_app/models/uploaded_media_model.dart';
@@ -39,7 +39,7 @@ class _DashboardScreenState extends State<DashboardScreen> {
                   ),
                   IconButton(
                     onPressed: () {
-                      FirebaseAuthFunction.instance.signOut();
+                      Navigator.push(context, MaterialPageRoute(builder: (_)=> SettingScreen()));
                     },
                     icon: const Icon(Icons.settings),
                   ),
