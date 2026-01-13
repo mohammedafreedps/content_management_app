@@ -1,5 +1,5 @@
 import 'package:bloc/bloc.dart';
-import 'package:content_managing_app/firebase_funtions/firebase_schedule_post_functions.dart';
+import 'package:content_managing_app/services/firebase_funtions/firebase_schedule_post_functions.dart';
 import 'package:meta/meta.dart';
 
 part 'schedule_post_state.dart';

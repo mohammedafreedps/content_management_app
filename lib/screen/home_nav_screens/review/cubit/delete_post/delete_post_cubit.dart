@@ -1,5 +1,5 @@
 import 'package:bloc/bloc.dart';
-import 'package:content_managing_app/firebase_funtions/firebase_delete_manager.dart';
+import 'package:content_managing_app/services/firebase_funtions/firebase_delete_manager.dart';
 import 'package:meta/meta.dart';
 
 part 'delete_post_state.dart';

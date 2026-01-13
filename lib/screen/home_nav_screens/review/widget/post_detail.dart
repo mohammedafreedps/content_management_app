@@ -1,4 +1,6 @@
-import 'package:content_managing_app/firebase_funtions/firebase_comment_functions.dart';
+import 'dart:io';
+
+import 'package:content_managing_app/services/firebase_funtions/firebase_comment_functions.dart';
 import 'package:content_managing_app/helper_funtions/format_comment_time.dart';
 import 'package:content_managing_app/helper_funtions/to_date_key.dart';
 import 'package:content_managing_app/main.dart';
@@ -9,6 +11,7 @@ import 'package:content_managing_app/screen/home_nav_screens/review/cubit/delete
 import 'package:content_managing_app/screen/home_nav_screens/review/cubit/schedule_post/schedule_post_cubit.dart';
 import 'package:content_managing_app/screen/widgets/comform_dialoge.dart';
 import 'package:content_managing_app/screen/widgets/snack_bar_error_messenger.dart';
+import 'package:content_managing_app/services/media_cache_service.dart';
 import 'package:content_managing_app/theme/app_radious.dart';
 import 'package:content_managing_app/theme/app_spacing.dart';
 import 'package:firebase_auth/firebase_auth.dart';
@@ -69,9 +72,16 @@ class _PostDetailState extends State<PostDetail> {
               widget.uploadedMedia.isApproved
                   ? IconButton(
                       onPressed: () async {
-                        DateTime? date =  await showDatePicker(context: context, firstDate: DateTime.now(), lastDate: DateTime(2040));
-                        if(date == null) return;
-                        context.read<SchedulePostCubit>().schedulePost(postId: widget.uploadedMedia.id, scheduledDate: toDateKey(date));
+                        DateTime? date = await showDatePicker(
+                          context: context,
+                          firstDate: DateTime.now(),
+                          lastDate: DateTime(2040),
+                        );
+                        if (date == null) return;
+                        context.read<SchedulePostCubit>().schedulePost(
+                          postId: widget.uploadedMedia.id,
+                          scheduledDate: toDateKey(date),
+                        );
                       },
                       icon: Icon(Icons.schedule),
                     )
@@ -133,8 +143,27 @@ class _PostDetailState extends State<PostDetail> {
                   child: widget.uploadedMedia.storagePath.isNotEmpty
                       ? Hero(
                           tag: widget.uploadedMedia.id,
-                          child: Image.network(
-                            widget.uploadedMedia.storagePath,
+                          child: FutureBuilder<File>(
+                            future: MediaCacheService.instance.getFile(
+                              widget.uploadedMedia.storagePath,
+                            ),
+                            builder: (context, snapshot) {
+                              if (snapshot.connectionState ==
+                                  ConnectionState.waiting) {
+                                return const Center(
+                                  child: CircularProgressIndicator(),
+                                );
+                              }
+
+                              if (snapshot.hasError || !snapshot.hasData) {
+                                return const Icon(Icons.error);
+                              }
+
+                              return Image.file(
+                                snapshot.data!,
+                                fit: BoxFit.contain,
+                              );
+                            },
                           ),
                         )
                       : Icon(

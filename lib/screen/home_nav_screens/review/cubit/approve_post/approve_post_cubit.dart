@@ -1,5 +1,5 @@
 import 'package:bloc/bloc.dart';
-import 'package:content_managing_app/firebase_funtions/firebase_post_approvel_manage.dart';
+import 'package:content_managing_app/services/firebase_funtions/firebase_post_approvel_manage.dart';
 import 'package:meta/meta.dart';
 
 part 'approve_post_state.dart';

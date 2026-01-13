@@ -1,5 +1,5 @@
-import 'package:content_managing_app/firebase_funtions/firebase_auth_funtions.dart';
-import 'package:content_managing_app/firebase_funtions/firebase_schedule_post_functions.dart';
+import 'package:content_managing_app/services/firebase_funtions/firebase_auth_funtions.dart';
+import 'package:content_managing_app/services/firebase_funtions/firebase_schedule_post_functions.dart';
 import 'package:content_managing_app/helper_funtions/to_date_key.dart';
 import 'package:content_managing_app/models/uploaded_media_model.dart';
 import 'package:content_managing_app/screen/home_nav_screens/dashboard/widgets/calender_view/calender_view.dart';
