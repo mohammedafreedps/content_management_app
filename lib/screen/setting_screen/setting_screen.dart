@@ -47,19 +47,44 @@ class _SettingScreenState extends State<SettingScreen> {
                 Container(
                   decoration: BoxDecoration(),
                   child: TextButton(
-                    onPressed: () {
-                      FirebaseAuthFunction.instance.signOut();
+                    onPressed: () async {
+                      await FirebaseAuthFunction.instance.signOut();
+                      if (mounted) {
+                        Navigator.pop(context);
+                      }
                     },
                     child: Text('Log out'),
                   ),
                 ),
                 Opacity(opacity: 0.2, child: Divider()),
-                SizedBox(height: AppSpacing.lg,),
-                if(CurrentUserRole.instance.isEditor)
-                Text('Role: Editor',style: Theme.of(context).textTheme.bodySmall?.copyWith(color: Colors.grey),)
+                SizedBox(height: AppSpacing.lg),
+                if (CurrentUserRole.instance.isEditor)
+                  Text(
+                    'Role: Editor',
+                    style: Theme.of(
+                      context,
+                    ).textTheme.bodySmall?.copyWith(color: Colors.grey),
+                  ),
+                if (CurrentUserRole.instance.isAdmin)
+                  Text(
+                    'Role: Admin',
+                    style: Theme.of(
+                      context,
+                    ).textTheme.bodySmall?.copyWith(color: Colors.grey),
+                  ),
+                if (CurrentUserRole.instance.isViewer)
+                  Text(
+                    'Role: Viewer',
+                    style: Theme.of(
+                      context,
+                    ).textTheme.bodySmall?.copyWith(color: Colors.grey),
+                  ),
               ],
             ),
-            Text('by Mohammed Afreed',style: Theme.of(context).textTheme.bodySmall,)
+            Text(
+              'by Mohammed Afreed',
+              style: Theme.of(context).textTheme.bodySmall,
+            ),
           ],
         ),
       ),

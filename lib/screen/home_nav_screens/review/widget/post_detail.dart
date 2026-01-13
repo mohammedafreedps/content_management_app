@@ -70,23 +70,25 @@ class _PostDetailState extends State<PostDetail> {
           appBar: AppBar(
             title: Text(widget.uploadedMedia.isStory ? 'Story' : 'Post'),
             actions: [
-              if (widget.uploadedMedia.isApproved && CurrentUserRole.instance.isEditor || CurrentUserRole.instance.isAdmin)
-                   IconButton(
-                      onPressed: () async {
-                        DateTime? date = await showDatePicker(
-                          context: context,
-                          firstDate: DateTime.now(),
-                          lastDate: DateTime(2040),
-                        );
-                        if (date == null) return;
-                        context.read<SchedulePostCubit>().schedulePost(
-                          postId: widget.uploadedMedia.id,
-                          scheduledDate: toDateKey(date),
-                        );
-                      },
-                      icon: Icon(Icons.schedule),
-                    ),
-                 
+              if (widget.uploadedMedia.isApproved == true &&
+                  (CurrentUserRole.instance.isEditor ||
+                      CurrentUserRole.instance.isAdmin))
+                IconButton(
+                  onPressed: () async {
+                    DateTime? date = await showDatePicker(
+                      context: context,
+                      firstDate: DateTime.now(),
+                      lastDate: DateTime(2040),
+                    );
+                    if (date == null) return;
+                    context.read<SchedulePostCubit>().schedulePost(
+                      postId: widget.uploadedMedia.id,
+                      scheduledDate: toDateKey(date),
+                    );
+                  },
+                  icon: Icon(Icons.schedule),
+                ),
+
               CurrentUserRole.instance.isViewer
                   ? SizedBox.shrink()
                   : PopupMenuButton(
@@ -115,7 +117,10 @@ class _PostDetailState extends State<PostDetail> {
                       },
                       itemBuilder: (context) => [
                         if (CurrentUserRole.instance.isAdmin)
-                        const PopupMenuItem(value: 'edit', child: Text('Edit')),
+                          const PopupMenuItem(
+                            value: 'edit',
+                            child: Text('Edit'),
+                          ),
                         if (!widget.uploadedMedia.isApproved)
                           const PopupMenuItem(
                             value: 'approve',
