@@ -5,6 +5,7 @@ import 'package:content_managing_app/screen/home_nav_screens/add_media/cubit/fir
 import 'package:content_managing_app/screen/widgets/snack_bar_error_messenger.dart';
 import 'package:content_managing_app/theme/app_radious.dart';
 import 'package:content_managing_app/theme/app_spacing.dart';
+import 'package:file_picker/file_picker.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:video_player/video_player.dart';
@@ -82,6 +83,31 @@ class _AddMediaScreenState extends State<AddMediaScreen> {
     });
   }
 
+  static Future<PickedMedia?> pickMedia() async {
+  final result = await FilePicker.platform.pickFiles(
+    type: FileType.custom,
+    allowedExtensions: ['jpg', 'jpeg', 'png', 'webp', 'mp4', 'mov', 'mkv'],
+    withData: false,
+  );
+
+  if (result == null || result.files.isEmpty) return null;
+
+  final file = File(result.files.single.path!);
+  final ext = file.path.split('.').last.toLowerCase();
+
+  if (['jpg', 'jpeg', 'png', 'webp'].contains(ext)) {
+    return PickedMedia(file: file, type: MediaType.image);
+  }
+
+  if (['mp4', 'mov', 'mkv'].contains(ext)) {
+    return PickedMedia(file: file, type: MediaType.video);
+  }
+
+  // Everything else rejected
+  return null;
+}
+
+
   @override
   Widget build(BuildContext context) {
     final width = MediaQuery.of(context).size.width;
@@ -99,12 +125,22 @@ class _AddMediaScreenState extends State<AddMediaScreen> {
                       // ================= MEDIA PICKER =================
                       GestureDetector(
                         onTap: () async {
-                          final picked = await FilePickerService.pickMedia();
+                          final picked = await pickMedia();
 
                           if (picked == null) {
                             snackBarErrorMessage(
                               context: context,
                               message: 'Pick any media',
+                            );
+                            return;
+                          }
+
+                          // 🔒 HARD FILTER
+                          if (picked.type != MediaType.image &&
+                              picked.type != MediaType.video) {
+                            snackBarErrorMessage(
+                              context: context,
+                              message: 'Only images and videos are supported',
                             );
                             return;
                           }
@@ -120,6 +156,7 @@ class _AddMediaScreenState extends State<AddMediaScreen> {
 
                           setState(() {});
                         },
+
                         child: Container(
                           width: width * 0.8,
                           height: width * 0.8,
